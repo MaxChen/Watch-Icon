@@ -1,0 +1,24 @@
+{
+  "author": "Max Chen",
+  "commands": [
+    {
+      "script": "Watch Icon.cocoascript",
+      "shortcut": "ctrl shift command i",
+      "name": "Watch Icon",
+      "identifier": "Watch Icon"
+    }
+  ],
+  "menu": {
+    "items": [
+      "Watch Icon"
+    ]
+  },
+  "identifier": "com.maxnesto.sketch.watch-icon",
+  "version": "1.0",
+  "description": "A plugin that automatically resizes artwork for Apple Watch icon.",
+  "homepage": "https://github.com/MaxChen/Watch-Icon",
+  "authorEmail": "max.nesto1992@gmail.com",
+  "compatibleVersion": 3,
+  "bundleVersion": 1,
+  "name": "Watch Icon"
+}

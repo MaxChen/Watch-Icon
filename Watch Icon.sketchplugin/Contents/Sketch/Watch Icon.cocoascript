@@ -1,0 +1,132 @@
+// Sketch Plugin: Watch Icon (ctrl shift command i)
+// Source: https://github.com/MaxChen/Watch-Icon
+// Version: 1.0
+
+// iOS icon sizes
+var iconSizes = [NSArray arrayWithObjects: 512, 98, 86, 44, 40, 29, 27.5, 24, nil];
+
+// do stuff
+function onRun(context) {
+  var doc = context.document;
+  if (originalIcon = handleSelection(context)) {
+    if ([[originalIcon frame] width] == [[originalIcon frame] height]) {
+      [originalIcon setName: "Icon-Original"];
+      removeExistingIcons(context);
+      iconize(originalIcon);
+      [[doc currentView] centerLayersInCanvas];
+    } else {
+      [doc showMessage:"Oops, icon artboard must have same width and height"];
+    }
+  }
+}
+
+function handleSelection(context) {
+  var selection = context.selection;
+  var doc = context.document;
+  var iconArtboard;
+
+  if([selection count] == 0) {
+    if ([[[doc currentPage] artboards] count] == 1) {
+      iconArtboard = [[[doc currentPage] artboards] firstObject];
+    } else {
+      [doc showMessage:"Oops, you have to select something"];
+    }
+  } else {
+    var currentSelection = selection[0];
+    if (currentSelection.className() == "MSArtboardGroup") {
+      iconArtboard = currentSelection;
+    } else {
+      iconArtboard = [currentSelection parentArtboard];
+      if (!iconArtboard) {
+        [doc showMessage:"Oops, selection has to be inside artboard"];
+      }
+    }
+    [currentSelection setIsSelected:false];
+  }
+
+  return iconArtboard
+}
+
+function removeExistingIcons(context) {
+  var doc = context.document;
+  var artboards = [[doc currentPage] artboards];
+  var loop = [artboards objectEnumerator];
+  while (artboard = [loop nextObject]) {
+    var name = [artboard name];
+    var artboardNames = [NSArray arrayWithObjects:  "WatchIcon-24@2x", "WatchIcon-27.5@2x", "WatchIcon-29", "WatchIcon-29@2x", "WatchIcon-29@3x", "WatchIcon-40@2x", "WatchIcon-40", "WatchIcon-44@2x", "WatchIcon-86@2x", "WatchIcon-98@2x", "iTunesWatchArtwork-512", "iTunesWatchArtwork-512@2x" , nil];
+    if ([artboardNames containsObject: name]) {
+      [[doc currentPage] removeLayer:artboard];
+    }
+  }
+}
+
+function iconize(originalIcon) {
+  var originalSize = [[originalIcon frame] width];
+  var originalX = [[originalIcon absoluteRect] rulerX];
+  var originalY = [[originalIcon absoluteRect] rulerY];
+  var spacing = 40;
+  var iconsRowHeight = 0;
+
+  var loop = [iconSizes objectEnumerator];
+  while (newSize = [loop nextObject]) {
+    if (newSize >= 512) {
+      var iconName = "iTunesWatchArtwork-" + newSize;
+
+      var newX = originalX;
+      var newY = originalY + originalSize + spacing;
+
+      // iTunesWatchArtwork-512@2x
+      var artwork2x = scaleIcon(originalIcon, (newSize * 2), iconName + "@2x");
+      [[artwork2x absoluteRect] setRulerX:newX];
+      [[artwork2x absoluteRect] setRulerY:newY];
+
+      // iTunesWatchArtwork-512
+      var artwork1x = scaleIcon(originalIcon, newSize, iconName);
+      [[artwork1x absoluteRect] setRulerX:newX + (newSize * 2) + spacing];
+      [[artwork1x absoluteRect] setRulerY:newY];
+    } else {
+      var iconName = "WatchIcon-" + newSize;
+
+      var newX = originalX + (1024 + 512 + (2 * spacing));
+      var newY = originalY + originalSize + iconsRowHeight + spacing;
+
+      if (newSize == 29 || newSize == 40) {
+        
+        if (newSize == 29) {
+          // Icon-Size@3x
+          var icon3x = scaleIcon(originalIcon, newSize * 3, iconName + "@3x");
+          [[icon3x absoluteRect] setRulerX:newX - (newSize * 2) - spacing];
+          [[icon3x absoluteRect] setRulerY:newY];
+        }
+
+        // Icon-Size
+        var icon1x = scaleIcon(originalIcon, newSize, iconName);
+        [[icon1x absoluteRect] setRulerX:newX + (newSize * 2) + (spacing * 2)];
+        [[icon1x absoluteRect] setRulerY:newY];
+      }
+
+      // Icon-Size@2x
+      var icon2x = scaleIcon(originalIcon, newSize * 2, iconName + "@2x");
+      [[icon2x absoluteRect] setRulerX:newX + spacing];
+      [[icon2x absoluteRect] setRulerY:newY];
+
+      // create new row
+      iconsRowHeight += (newSize * 2) + spacing;
+    }
+  }
+}
+
+
+
+function scaleIcon(originalIcon, newSize, newName) {
+  var newIcon = [originalIcon duplicate];
+
+  var originalSize = [[originalIcon frame] width];
+  var ratio = newSize / originalSize;
+  [newIcon multiplyBy:ratio];
+
+  [newIcon setName: newName];
+  [newIcon select:true byExpandingSelection:true];
+
+  return newIcon;
+}
